@@ -8,7 +8,7 @@ A small BepInEx 5 plugin for [R.E.P.O.](https://store.steampowered.com/app/32416
 That makes Steam less likely to get stuck on "R.E.P.O. - Stopping" after Unity hangs on exit.
 
 - Plugin id: `io.ashtonite.repo.forcequit`
-- Version: 1.0.1
+- Version: 1.0.2
 - Separate from [RepoXR FBT](https://github.com/Ashtonite365/RepoXR). This plugin does not modify RepoXR.
 
 It kills processes named `REPO`, plus `UnityCrashHandler64` / `UnityCrashHandler32` only if they live under `steamapps\common\REPO`.

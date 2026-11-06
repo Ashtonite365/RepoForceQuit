@@ -11,7 +11,7 @@ namespace RepoForceQuit
     {
         public const string PluginId = "io.ashtonite.repo.forcequit";
         public const string PluginName = "Repo Force Quit";
-        public const string PluginVersion = "1.0.1";
+        public const string PluginVersion = "1.0.2";
 
         private const int GWLP_WNDPROC = -4;
         private const uint WM_CLOSE = 0x0010;
@@ -31,6 +31,7 @@ namespace RepoForceQuit
         private IntPtr _oldConsoleWndProc = IntPtr.Zero;
         private WndProcDelegate _consoleWndProc;
         private ConsoleCtrlDelegate _consoleCtrl;
+        private bool _consoleHookTried;
 
         private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
         private delegate bool ConsoleCtrlDelegate(uint ctrlType);
@@ -56,7 +57,7 @@ namespace RepoForceQuit
                 Logger.LogWarning("Could not hook console control events; window hooks are still used.");
             else
                 Logger.LogInfo("Hooked console close (BepInEx console X, Ctrl+C).");
-            Logger.LogInfo("Repo Force Quit 1.0.1 loaded. Closing the game window X or the BepInEx console force-kills leftover R.E.P.O. processes.");
+            Logger.LogInfo("Repo Force Quit 1.0.2 loaded. Closing the game window X or the BepInEx console force-kills leftover R.E.P.O. processes.");
         }
 
         private void Update()
@@ -77,19 +78,23 @@ namespace RepoForceQuit
                 }
             }
 
-            if (_oldConsoleWndProc == IntPtr.Zero)
+            if (!_consoleHookTried)
             {
                 var consoleHwnd = GetConsoleWindow();
-                if (consoleHwnd != IntPtr.Zero && consoleHwnd != _hwnd)
+                if (consoleHwnd != IntPtr.Zero)
                 {
-                    _consoleHwnd = consoleHwnd;
-                    _consoleWndProc = HookedConsoleWndProc;
-                    var newPtr = Marshal.GetFunctionPointerForDelegate(_consoleWndProc);
-                    _oldConsoleWndProc = SetWindowLongPtr(_consoleHwnd, GWLP_WNDPROC, newPtr);
-                    if (_oldConsoleWndProc == IntPtr.Zero)
-                        Logger.LogWarning("Could not hook the BepInEx console window; console control handler is still hooked.");
-                    else
-                        Logger.LogInfo("Hooked the BepInEx console close button.");
+                    _consoleHookTried = true;
+                    if (consoleHwnd != _hwnd)
+                    {
+                        _consoleHwnd = consoleHwnd;
+                        _consoleWndProc = HookedConsoleWndProc;
+                        var newPtr = Marshal.GetFunctionPointerForDelegate(_consoleWndProc);
+                        _oldConsoleWndProc = SetWindowLongPtr(_consoleHwnd, GWLP_WNDPROC, newPtr);
+                        if (_oldConsoleWndProc == IntPtr.Zero)
+                            Logger.LogWarning("Could not hook the BepInEx console window; console control handler is still hooked. Will not retry every frame.");
+                        else
+                            Logger.LogInfo("Hooked the BepInEx console close button.");
+                    }
                 }
             }
         }

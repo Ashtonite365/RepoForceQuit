@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>RepoForceQuit.Core</AssemblyName>
+    <RootNamespace>RepoForceQuit</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="QuitButtons.cs" />
+    <Compile Include="QuitSession.cs" />
+    <Compile Include="QuitTargeting.cs" />
+    <Compile Include="SteamShutdown.cs" />
+  </ItemGroup>
+</Project>

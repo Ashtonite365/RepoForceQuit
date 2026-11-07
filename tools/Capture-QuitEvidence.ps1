@@ -3,7 +3,8 @@
 param(
     [string]$LogPath = "C:\Program Files (x86)\Steam\steamapps\common\REPO\BepInEx\LogOutput.log",
     [string]$OutFile = "",
-    [int]$PollSeconds = 0
+    [int]$PollSeconds = 0,
+    [switch]$PrintFilter
 )
 
 $ErrorActionPreference = "Continue"
@@ -30,12 +31,27 @@ $names = @(
     "gameoverlayui.exe"
 )
 
+function Get-EvidenceProcessFilter {
+    param([string[]]$ProcessNames)
+    # $_ is the pipeline object. $(_) is a different subexpression and expands empty.
+    $clauses = foreach ($name in $ProcessNames) {
+        $safe = $name.Replace("'", "''")
+        "Name='$safe'"
+    }
+    return ($clauses -join " OR ")
+}
+
+if ($PrintFilter) {
+    Write-Output (Get-EvidenceProcessFilter -ProcessNames $names)
+    return
+}
+
 function Write-Snapshot {
     param([System.IO.StreamWriter]$Writer)
     $Writer.WriteLine("---- $(Get-Date -Format o) ----")
     $Writer.WriteLine("Record only. Opera, Steam, SteamVR, Java, Playit, and conhost are listed so they can be told apart from R.E.P.O. They are not targets.")
     try {
-        $filter = ($names | ForEach-Object { "Name='$(_)'" }) -join " OR "
+        $filter = Get-EvidenceProcessFilter -ProcessNames $names
         $rows = Get-CimInstance Win32_Process -Filter $filter
         if (-not $rows) {
             $Writer.WriteLine("(none of the named images are running)")
